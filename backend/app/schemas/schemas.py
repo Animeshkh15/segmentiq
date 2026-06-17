@@ -29,20 +29,19 @@ class VotingResult(BaseModel):
 
 class ReviewTask(BaseModel):
     page_number: int
-    predicted_category: str
+    reason: str
     confidence: float
+    agent_votes: List[str]
+    winning_category: str
+    reasoning: str
 
 
 class Segment(BaseModel):
     segment_id: int
-    page_start: int
-    page_end: int
     category: str
-    confidence: float
-
-
-class ProcessingResult(BaseModel):
-    segments: List[Segment]
+    start_page: int
+    end_page: int
+    pages: List[int]
 
 
 class PageClassification(BaseModel):
@@ -50,6 +49,17 @@ class PageClassification(BaseModel):
     category: str
     confidence: float
     reasoning: str
+    review_required: bool
+
+
+class PipelineResult(BaseModel):
+    document_name: str
+    page_results: List[PageClassification]
+    segments: List[Segment]
+
+
+class ProcessingResult(BaseModel):
+    segments: List[Segment]
 
 
 class ReviewRequired(BaseModel):
@@ -58,4 +68,4 @@ class ReviewRequired(BaseModel):
 
 
 class ClassificationRequest(BaseModel):
-    pages: dict[int, str]
+    pages: dict[int, str]
