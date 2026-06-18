@@ -69,18 +69,16 @@ ray_results/
 htmlcov/
 
 #storage files
-sample_segmented.json
-document_segmented.json
-document_segmented.xlsx
-sample_segmented.xlsx
-~$sample_segmented.xlsx
-sample1_segmented.json
-sample1_segmented.xlsx
-
 
 #sample files
 sample.pdf
 sample1.pdf
+sample_mixed.pdf
+prescription.pdf
+more confusion.pdf
+more confusion 1.pdf
+confusing_document_test.pdf
+sample_mixed_document_input.pdf
 
 #test files
 test_agent.py
@@ -88,3 +86,4 @@ test_api.py
 test_document.py
 test_ocr.py
 test_voting.py
+test_groq.py
