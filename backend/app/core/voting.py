@@ -48,7 +48,7 @@ class VotingEngine:
 
         counter = Counter(agent_votes)
         winning_category, winning_votes = counter.most_common(1)[0]
-        confidence = winning_votes / len(successful_results)
+        confidence = winning_votes / 5
 
         majority_reasoning = next(
             result.reasoning

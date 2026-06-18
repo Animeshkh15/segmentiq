@@ -11,6 +11,7 @@ class AgentPrediction(BaseModel):
     category: str
     reasoning: str
 
+
 class AgentResult(BaseModel):
     success: bool
     category: Optional[str] = None
@@ -68,4 +69,10 @@ class ReviewRequired(BaseModel):
 
 
 class ClassificationRequest(BaseModel):
-    pages: dict[int, str]
+    pages: dict[int, str]
+
+
+class ReviewResolution(BaseModel):
+    page_number: int
+    final_category: str
+

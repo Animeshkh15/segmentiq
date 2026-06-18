@@ -3,8 +3,8 @@ app:
   version: 1.0.0
 
 model:
-  provider: google
-  model_name: gemini-2.5-flash
+  provider: groq
+  model_name: llama-3.3-70b-versatile
   temperature: 0.2
 
 agents:

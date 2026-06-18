@@ -26,7 +26,8 @@ class ReviewManager:
 
     def resolve_review(
         self,
-        page_number: int
+        page_number: int,
+        final_category: str
     ) -> bool:
         for task in self._review_queue:
             if task.page_number == page_number:

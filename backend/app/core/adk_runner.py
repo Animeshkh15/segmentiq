@@ -3,7 +3,8 @@ import os
 
 import yaml
 from dotenv import load_dotenv
-from google import genai
+#from google import genai
+from groq import Groq
 
 from app.schemas.schemas import AgentResult
 
@@ -22,8 +23,8 @@ class ADKRunner:
 
             self.config = yaml.safe_load(file)
 
-        self.client = genai.Client(
-            api_key=os.getenv("GOOGLE_API_KEY")
+        self.client = Groq(
+            api_key=os.getenv("GROQ_API_KEY")
         )
 
         self.model_name = self.config["model"]["model_name"]
@@ -40,8 +41,8 @@ class ADKRunner:
         import time
         import random
 
-        max_retries = 5
-        base_backoff = 4.0
+        max_retries = 4
+        base_backoff = 2.0
 
         for attempt in range(max_retries):
             try:
@@ -56,15 +57,21 @@ Page Content:
                     f"Calling Gemini for page {page_number} (Attempt {attempt + 1}/{max_retries})"
                 )
 
-                response = self.client.models.generate_content(
+                response = self.client.chat.completions.create(
                     model=self.model_name,
-                    contents=prompt
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=self.temperature
                 )
                 print(
                     f"Gemini response received for page {page_number}"
                 )   
                 
-                resp_text = response.text.strip()
+                resp_text = response.choices[0].message.content.strip()
                 if resp_text.startswith("```json"):
                     resp_text = resp_text[7:]
                 if resp_text.startswith("```"):
@@ -73,7 +80,9 @@ Page Content:
                     resp_text = resp_text[:-3]
                 resp_text = resp_text.strip()
                 
-                result = json.loads(resp_text)
+                result = json.loads(
+                    resp_text
+                )
 
                 return AgentResult(
                     success=True,
@@ -89,7 +98,7 @@ Page Content:
 
                 if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
                     if attempt < max_retries - 1:
-                        sleep_time = (base_backoff ** attempt) + random.uniform(0.5, 1.5)
+                        sleep_time = base_backoff + random.uniform(0.5, 1.5)
                         print(f"Rate limit hit. Retrying page {page_number} in {sleep_time:.2f} seconds...")
                         time.sleep(sleep_time)
                         continue

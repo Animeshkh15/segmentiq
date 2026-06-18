@@ -4,7 +4,8 @@ import yaml
 import time
 import random
 from dotenv import load_dotenv
-from google import genai
+# from google import genai
+from groq import Groq
 
 load_dotenv()
 
@@ -15,8 +16,8 @@ class BoundaryDetector:
         with open("config/config.yaml", "r", encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
 
-        self.client = genai.Client(
-            api_key=os.getenv("GOOGLE_API_KEY")
+        self.client = Groq(
+            api_key=os.getenv("GROQ_API_KEY")
         )
         self.model_name = self.config["model"]["model_name"]
 
@@ -34,8 +35,8 @@ class BoundaryDetector:
         Returns:
             dict: { "is_boundary": bool, "reasoning": str }
         """
-        max_retries = 5
-        base_backoff = 4.0
+        max_retries = 4
+        base_backoff = 2.0
 
         prompt = f"""You are an expert document analysis system.
 We have two consecutive pages from a scanned document package. Both pages have been classified under the category: '{category}'.
@@ -69,15 +70,21 @@ Return a JSON object only in the following format:
                 print(
                     f"Calling Gemini for boundary detection on Page {page_number} (Attempt {attempt + 1}/{max_retries})"
                 )
-                response = self.client.models.generate_content(
+                response = self.client.chat.completions.create(
                     model=self.model_name,
-                    contents=prompt
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0
                 )
                 print(
                     f"Gemini boundary response received for Page {page_number}"
                 )
 
-                resp_text = response.text.strip()
+                resp_text = response.choices[0].message.content.strip()
                 if resp_text.startswith("```json"):
                     resp_text = resp_text[7:]
                 if resp_text.startswith("```"):
@@ -100,7 +107,7 @@ Return a JSON object only in the following format:
 
                 if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
                     if attempt < max_retries - 1:
-                        sleep_time = (base_backoff ** attempt) + random.uniform(0.5, 1.5)
+                        sleep_time = base_backoff + random.uniform(0.5, 1.5)
                         print(f"Rate limit hit. Retrying boundary check on Page {page_number} in {sleep_time:.2f} seconds...")
                         time.sleep(sleep_time)
                         continue
